@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: obstruccion
+spec:
+  selector:
+    matchLabels:
+      app: obstruccion
+  template:
+    metadata:
+      labels:
+        app: obstruccion
+    spec:
+      imagePullSecrets:
+      - name: tecnoexplora-dockerhub
+      containers:
+      - name: obstruccion
+        image: tecnoexplora/rasp-obs:v0.0.1
+        command: ["python3", "main.py", "cpu"]
+        env:
+        - name: TZ
+          value: "America/Mexico_City"
+        - name: CONFIG_PATH
+          value: /mnt/config.yaml
+        - name: LOGGER_PATH
+          value: /app/metrics.log
+        - name: LD_LIBRARY_PATH
+          value: /usr/lib/hailort
+        volumeMounts:
+        - mountPath: /mnt
+          name: nfs-volume
+        securityContext:
+          privileged: true
+        stdin: true
+        tty: true
+      volumes:
+      - name: nfs-volume
+        persistentVolumeClaim:
+          claimName: nfs-pvc-rpi1
+      - name: hailo-device
+        hostPath:
+          path: /dev/hailo0
+          type: CharDevice
+      volumeDevices:
+      - name: hailo-device
+        devicePath: /dev/hailo0

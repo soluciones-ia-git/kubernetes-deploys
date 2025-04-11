@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nfs-hola-mundo-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: nfs-hola-mundo
+  template:
+    metadata:
+      labels:
+        app: nfs-hola-mundo
+    spec:
+      containers:
+        - name: nfs-hola-mundo-container
+          image: busybox
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          command: ["sh", "-c", "echo 'Hola Mundo' > /mnt/hola_mundo_$(date +%s).txt && sleep 3600"]
+          volumeMounts:
+            - mountPath: /mnt
+              name: nfs-volume
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-pvc-rpi1
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nfs-hola-mundo-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: nfs-hola-mundo
+  template:
+    metadata:
+      labels:
+        app: nfs-hola-mundo
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ubuntu
+      containers:
+        - name: nfs-hola-mundo-container
+          image: busybox
+          command: ["sh", "-c", "echo 'Hola Mundo' > /mnt/hola_mundo_$(date +%s).txt && sleep 3600"]
+          volumeMounts:
+            - mountPath: /mnt
+              name: nfs-volume
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-pvc-rpi1
