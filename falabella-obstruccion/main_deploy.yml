@@ -22,13 +22,33 @@ spec:
           value: "America/Mexico_City"
         - name: CONFIG_PATH
           value: /mnt/config.yaml
+        - name: CODE_PATH
+          value: /home/deepview/obstruccion/code
+        - name: OUTPUT_PATH
+          value: /home/deepview/obstruccion/code/data
         - name: LOGGER_PATH
           value: /app/metrics.log
         - name: LD_LIBRARY_PATH
           value: /usr/lib/hailort
+        - name: DB_NAME
+          value: "dbname"
+        - name: DB_USER
+          value: "dbuser"
+        - name: DB_PASSWORD
+          value: "pass765ghjx"
+        - name: DB_HOST
+          value: "192.168.194.97"
+        - name: DB_PORT
+          value: "5032"
+        - name: SECRET_KEY 
+          value: "4Tfi3VjjpFg-P7qouw5Xf7N20QEDkjntIWBWZQvuLuY="
         volumeMounts:
         - mountPath: /mnt
           name: nfs-volume
+        - name: code
+          mountPath: /app
+        - name: data
+          mountPath: /data
         securityContext:
           privileged: true
         stdin: true
@@ -37,6 +57,14 @@ spec:
       - name: nfs-volume
         persistentVolumeClaim:
           claimName: nfs-pvc-rpi1
+      - name: code
+        hostPath:
+          path: /home/deepview/obstruccion/code
+          type: Directory
+      - name: data
+        hostPath:
+          path: /home/deepview/obstruccion/code/data
+          type: Directory
       - name: hailo-device
         hostPath:
           path: /dev/hailo0
