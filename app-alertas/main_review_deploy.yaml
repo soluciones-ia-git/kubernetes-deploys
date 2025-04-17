@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: app-alerts-back-review
+spec:
+    selector:
+        matchLabels:
+            app: app-alerts-back-review
+    template:
+        metadata:
+            labels:
+                app: app-alerts-back-review
+        spec:
+            nodeSelector:
+                kubernetes.io/hostname: deepview-rpi5
+            imagePullSecrets:
+                - name: tecnoexplora-dockerhub
+            containers:
+                - name: db
+                  image: postgres:15
+                  env:
+                      - name: POSTGRES_DB
+                        value: dbname
+                      - name: POSTGRES_USER
+                        value: dbuser
+                      - name: POSTGRES_PASSWORD
+                        value: pass765ghjx
+                  ports:
+                      - containerPort: 5432
+
+                - name: redis
+                  image: redis:alpine
+                  ports:
+                      - containerPort: 6379
+
+                - name: backend
+                  image: tecnoexplora/app-alerts-back:latest
+                  env:
+                      - name: DB_NAME
+                        value: dbname
+                      - name: DB_USER
+                        value: dbuser
+                      - name: DB_PASSWORD
+                        value: pass765ghjx
+                      - name: DB_HOST
+                        value: "127.0.0.1"
+                      - name: DB_PORT
+                        value: "5432"
+                      - name: REDIS_HOST
+                        value: "127.0.0.1"
+                      - name: REDIS_PORT
+                        value: "6379"
+                      - name: ALLOWED_HOSTS
+                        value: "localhost,127.0.0.1"
+                      - name: IMAGE_BASE_DIR
+                        value: "/app/images"
+                      - name: WEB_ALERTS
+                        value: "http://192.168.101.212:8080"
+                  ports:
+                      - containerPort: 8080
+                        hostPort: 9090
+                  volumeMounts:
+                      - name: app-images
+                        mountPath: /app/images
+                      - name: www-volume
+                        mountPath: /app/www
+            volumes:
+                - name: app-images
+                  hostPath:
+                      path: /home/deepview/obstruccion/code/data
+                      type: Directory
+                - name: www-volume
+                  hostPath:
+                      path: /app-review/www
+                      type: DirectoryOrCreate
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: alerts-front-review-job
+spec:
+    template:
+        metadata:
+            labels:
+                app: alerts-front-review
+        spec:
+            nodeSelector:
+                kubernetes.io/hostname: deepview-rpi5
+            imagePullSecrets:
+                - name: tecnoexplora-dockerhub
+            containers:
+                - name: alerts-front
+                  image: tecnoexplora/app-alerts-front:1.6.0-fal-review
+                  volumeMounts:
+                      - name: www-volume
+                        mountPath: /app/www
+            restartPolicy: Never
+            volumes:
+                - name: www-volume
+                  hostPath:
+                      path: /app-review/www
+                      type: DirectoryOrCreate

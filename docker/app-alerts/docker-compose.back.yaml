@@ -1,0 +1,53 @@
+name: app-alerts
+services:
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - consumer
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: dbname
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: pass765ghjx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - consumer
+
+  web:
+    env_file:
+      - .env
+    image: tecnoexplora/app-alerts-back:latest
+    volumes:
+      - log_data:/api_alerts/project_alerts/logs
+      - ${IMAGE_BASE_DIR}:/app/images
+      - ${SCRIPT_DIR}:/app/scripts
+      - ${HOME_DIR}:/app/home
+      - ${APP_BUILD_DIR}:/app/www
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    tty: true
+    networks:
+      - consumer
+      - app-network
+
+networks:
+  consumer: 
+    driver: bridge
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  log_data:

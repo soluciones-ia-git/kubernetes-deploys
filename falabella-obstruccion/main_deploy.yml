@@ -11,6 +11,8 @@ spec:
       labels:
         app: obstruccion
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: deepview-rpi5
       imagePullSecrets:
       - name: tecnoexplora-dockerhub
       containers:
@@ -19,9 +21,9 @@ spec:
         command: ["python3", "main.py", "cpu"]
         env:
         - name: TZ
-          value: "America/Mexico_City"
+          value: "America/Santiago"
         - name: CONFIG_PATH
-          value: /mnt/config.yaml
+          value: "/app/config/config.yaml"
         - name: CODE_PATH
           value: /home/deepview/obstruccion/code
         - name: OUTPUT_PATH
@@ -42,6 +44,8 @@ spec:
           value: "5032"
         - name: SECRET_KEY 
           value: "4Tfi3VjjpFg-P7qouw5Xf7N20QEDkjntIWBWZQvuLuY="
+        - name: API_ENDPOINT
+          value: "http://192.168.101.212:8081/api/alerts/set_alarm/"
         volumeMounts:
         - mountPath: /mnt
           name: nfs-volume

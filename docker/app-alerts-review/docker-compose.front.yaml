@@ -1,0 +1,8 @@
+name: app-alerts-review
+services:
+  build-front:
+    env_file:
+      - .env
+    image: tecnoexplora/app-alerts-front:1.6.0-fal-review
+    volumes:
+      - ${APP_BUILD_DIR}:/app/www
